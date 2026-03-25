@@ -14,10 +14,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# API Routes only
+from fastapi.responses import FileResponse
+from pathlib import Path
+
+# Absolute path to the index.html at the root
+BASE_DIR = Path(__file__).resolve().parent
+
 @app.get("/")
 async def read_root():
-    return {"status": "Heart Disease ML API is live", "documentation": "/api/v1/docs"}
+    index_path = BASE_DIR / "index.html"
+    if index_path.exists():
+        return FileResponse(index_path)
+    return {"status": "Heart Disease ML API is live", "info": "index.html not found at root"}
 
 @app.get("/api")
 async def api_root():
