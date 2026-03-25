@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.routes import router
 import os
 
+from fastapi.staticfiles import StaticFiles
+
 app = FastAPI(title="Heart Disease ML API")
 
 # Security: Enable CORS
@@ -13,6 +15,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Setup static files for CSS/Assets
+BASE_DIR = Path(__file__).resolve().parent
+app.mount("/css", StaticFiles(directory=str(BASE_DIR / "css")), name="css")
 
 from fastapi.responses import FileResponse
 from pathlib import Path
