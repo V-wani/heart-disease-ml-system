@@ -15,6 +15,14 @@ app.add_middleware(
 )
 
 # API Routes only
+@app.get("/")
+async def read_root():
+    return {"status": "Heart Disease ML API is live", "documentation": "/api/v1/docs"}
+
+@app.get("/api")
+async def api_root():
+    return {"message": "Heart Disease ML API Root", "version": "v1"}
+
 app.include_router(router, prefix="/api/v1")
 
 # Removed Jinja2 and static mounts for Vercel 
