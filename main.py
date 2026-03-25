@@ -14,14 +14,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# High-Performance API Route matching exactly what Vercel/User expects
-# router has /predict, so prefix /api makes it /api/predict
+# Standardized API Routes matching /api/predict in Vercel
+# The router defines /predict, so prefix /api makes it /api/predict
 app.include_router(router, prefix="/api")
 
-# Healthcare check
-@app.get("/api")
-async def api_root():
-    return {"message": "Heart Disease ML API Root", "status": "active"}
+# Minimal health check for Vercel
+@app.get("/api/health")
+async def health():
+    return {"status": "healthy"}
 
 if __name__ == "__main__":
     import uvicorn
