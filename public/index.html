@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Stroke Prediction by akarsh</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+        }
+        .section-title {
+            grid-column: 1 / -1;
+            margin-top: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--primary);
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        select, input {
+            width: 100%;
+            padding: 15px 20px;
+            background: var(--surface);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        input[type="range"] {
+            padding: 0;
+            height: 10px;
+            margin: 15px 0;
+        }
+        .range-value {
+            text-align: right;
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="max-width: 800px;">
+        <header>
+            <h1>Heart Stroke Prediction</h1>
+            <p class="subtitle">by akarsh</p>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">Provide the following details to check your heart stroke risk:</p>
+        </header>
+
+        <form id="predictionForm">
+            <div class="form-grid">
+                <div class="section-title">Personal Details</div>
+                <div class="form-group">
+                    <label>Age (18-100)</label>
+                    <div class="range-value" id="ageVal">40</div>
+                    <input type="range" id="Age" min="18" max="100" value="40" oninput="document.getElementById('ageVal').innerText = this.value">
+                </div>
+                <div class="form-group">
+                    <label>Sex</label>
+                    <select id="Sex" required>
+                        <option value="M">Male (M)</option>
+                        <option value="F">Female (F)</option>
+                    </select>
+                </div>
+
+                <div class="section-title">Vital Metrics</div>
+                <div class="form-group">
+                    <label>Resting Blood Pressure (80-200 mm Hg)</label>
+                    <input type="number" id="RestingBP" value="120" min="80" max="200" required>
+                </div>
+                <div class="form-group">
+                    <label>Cholesterol (100-600 mg/dL)</label>
+                    <input type="number" id="Cholesterol" value="200" min="100" max="600" required>
+                </div>
+                <div class="form-group">
+                    <label>Max Heart Rate (60-220)</label>
+                    <div class="range-value" id="maxHrVal">150</div>
+                    <input type="range" id="MaxHR" min="60" max="220" value="150" oninput="document.getElementById('maxHrVal').innerText = this.value">
+                </div>
+                <div class="form-group">
+                    <label>Oldpeak (ST Depression: 0.0-6.0)</label>
+                    <div class="range-value" id="oldpeakVal">1.0</div>
+                    <input type="range" id="Oldpeak" min="0" max="6" step="0.1" value="1.0" oninput="document.getElementById('oldpeakVal').innerText = this.value">
+                </div>
+
+                <div class="section-title">Diagnostic Data</div>
+                <div class="form-group">
+                    <label>Chest Pain Type</label>
+                    <select id="ChestPainType" required>
+                        <option value="ATA">ATA</option>
+                        <option value="NAP">NAP</option>
+                        <option value="TA">TA</option>
+                        <option value="ASY">ASY</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fasting Blood Sugar > 120 mg/dL</label>
+                    <select id="FastingBS" required>
+                        <option value="0">0 (Normal)</option>
+                        <option value="1">1 (High)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Resting ECG</label>
+                    <select id="RestingECG" required>
+                        <option value="Normal">Normal</option>
+                        <option value="ST">ST</option>
+                        <option value="LVH">LVH</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Exercise-Induced Angina</label>
+                    <select id="ExerciseAngina" required>
+                        <option value="Y">Yes (Y)</option>
+                        <option value="N">No (N)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>ST Slope</label>
+                    <select id="ST_Slope" required>
+                        <option value="Up">Up</option>
+                        <option value="Flat">Flat</option>
+                        <option value="Down">Down</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" style="margin-top: 30px;">Predict Heart Risk</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>AI analyzing medical data...</p>
+        </div>
+
+        <div class="result-card" id="resultCard">
+            <h2 id="resultTitle">Result Header</h2>
+            <p id="resultText">Result detailed analysis will appear here.</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultCard = document.getElementById('resultCard');
+            const loading = document.getElementById('loading');
+            
+            resultCard.style.display = 'none';
+            loading.style.display = 'block';
+            
+            // Map inputs to the one-hot dynamic keys as in the reference logic
+            const sex = document.getElementById('Sex').value;
+            const cpType = document.getElementById('ChestPainType').value;
+            const ecgType = document.getElementById('RestingECG').value;
+            const exerciseType = document.getElementById('ExerciseAngina').value;
+            const slopeType = document.getElementById('ST_Slope').value;
+
+            // Notice we use the 'Sex_' + sex pattern here, 
+            // the backend preprocess function will handle the filling!
+            const raw_payload = {
+                Age: parseInt(document.getElementById('Age').value),
+                RestingBP: parseInt(document.getElementById('RestingBP').value),
+                Cholesterol: parseInt(document.getElementById('Cholesterol').value),
+                FastingBS: parseInt(document.getElementById('FastingBS').value),
+                MaxHR: parseInt(document.getElementById('MaxHR').value),
+                Oldpeak: parseFloat(document.getElementById('Oldpeak').value),
+                ['Sex_' + sex]: 1,
+                ['ChestPainType_' + cpType]: 1,
+                ['RestingECG_' + ecgType]: 1,
+                ['ExerciseAngina_' + exerciseType]: 1,
+                ['ST_Slope_' + slopeType]: 1
+            };
+
+            try {
+                const response = await fetch('/api/v1/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(raw_payload),
+                });
+
+                const data = await response.json();
+                
+                loading.style.display = 'none';
+                resultCard.style.display = 'block';
+                
+                const title = document.getElementById('resultTitle');
+                const text = document.getElementById('resultText');
+                
+                if (data.prediction === "High Risk of Heart Disease") {
+                    resultCard.className = 'result-card high-risk';
+                    title.innerText = '⚠️ High Risk of Heart Disease';
+                    text.innerText = 'The assessment indicates clinical patterns associated with cardiovascular risk. Please consult akarsh or a medical professional.';
+                } else {
+                    resultCard.className = 'result-card low-risk';
+                    title.innerText = '✅ Low Risk of Heart Disease';
+                    text.innerText = 'Your heart health metrics are within optimal ranges according to the current model analysis.';
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                alert('Connection failure. Ensure FastAPI backend is active.');
+            }
+        });
+    </script>
+</body>
+</html>
