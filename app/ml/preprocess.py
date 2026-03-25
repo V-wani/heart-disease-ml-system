@@ -1,26 +1,17 @@
 import numpy as np
-import pandas as pd
 from .model_loader import scaler, columns
 
 def preprocess(data):
     """
-    Transforms raw input dictionary into a scaled numpy array aligned with the model's expected columns.
-    Follows the reference logic:
-    1. Create dataframe
-    2. Fill missing columns with 0
-    3. Reorder columns to match expected_columns
-    4. Scale
+    Optimized data preprocessing for single inference.
+    Uses O(N) traversal with dictionary lookups to align with model features.
     """
-    # Create input dataframe
-    input_df = pd.DataFrame([data])
-
-    # Fill in missing columns with 0s
-    for col in columns:
-        if col not in input_df.columns:
-            input_df[col] = 0
-
-    # Reorder columns to match the model's training requirement
-    input_df = input_df[columns]
-
-    # Scale the input
-    return scaler.transform(input_df)
+    # Create feature vector aligned with the trained model's expected columns
+    # Efficiently handles missing features by defaulting to 0
+    features = [data.get(col, 0) for col in columns]
+    
+    # Transform to 2D numpy array for the scaler (1, N)
+    arr = np.array(features).reshape(1, -1)
+    
+    # Apply pre-trained scaling
+    return scaler.transform(arr)

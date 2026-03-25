@@ -4,7 +4,18 @@ from fastapi.templating import Jinja2Templates
 from app.api.v1.routes import router
 import os
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(title="Heart Disease ML API")
+
+# Security: Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, specify exact origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Setup templates and static files
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
